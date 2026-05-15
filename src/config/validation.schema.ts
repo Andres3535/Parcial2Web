@@ -21,7 +21,8 @@ export const validationSchema = Joi.object({
 
   BCRYPT_SALT_ROUNDS: Joi.number().min(4).max(15).default(10),
 
-  MAX_ACTIVE_LOANS: Joi.number().integer().min(1).max(100).default(3),
+  MAX_ACTIVE_LOANS_PER_USER: Joi.number().integer().min(1).max(100).default(3),
+  MAX_ACTIVE_LOANS: Joi.number().integer().min(1).max(100).optional(),
   DAILY_FINE_RATE: Joi.number().min(0).default(0.5),
   MAX_LOAN_DAYS: Joi.number().integer().min(1).max(365).default(30),
 });

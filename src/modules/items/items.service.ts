@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
+import { Loan, LoanStatus } from '../loans/entities/loan.entity';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ItemResponseDto } from './dto/item-response.dto';
 import { QueryItemsDto } from './dto/query-items.dto';
@@ -8,20 +9,13 @@ import { UpdateItemDto } from './dto/update-item.dto';
 import { Item } from './entities/item.entity';
 import { toItemResponseDto } from './items.mapper';
 
-type TableExistsRow = {
-  exists: boolean;
-};
-
-type UnavailableItemRow = {
-  itemId: string;
-};
-
 @Injectable()
 export class ItemsService {
   constructor(
     @InjectRepository(Item)
     private readonly itemsRepository: Repository<Item>,
-    private readonly dataSource: DataSource,
+    @InjectRepository(Loan)
+    private readonly loansRepository: Repository<Loan>,
   ) {}
 
   async create(createItemDto: CreateItemDto): Promise<ItemResponseDto> {
@@ -108,30 +102,15 @@ export class ItemsService {
       return new Set<string>();
     }
 
-    if (!(await this.loansTableExists())) {
-      return new Set<string>();
-    }
+    const loans = await this.loansRepository.find({
+      select: { itemId: true },
+      where: {
+        itemId: In(itemIds),
+        status: In([LoanStatus.ACTIVE, LoanStatus.OVERDUE]),
+      },
+    });
 
-    const rows = await this.dataSource.query<UnavailableItemRow[]>(
-      `
-        SELECT DISTINCT "itemId" AS "itemId"
-        FROM "loans"
-        WHERE "itemId" = ANY($1::uuid[])
-          AND "status" IN ('active', 'overdue')
-      `,
-      [itemIds],
-    );
-
-    return new Set(rows.map((row) => row.itemId));
-  }
-
-  private async loansTableExists(): Promise<boolean> {
-    const rows = await this.dataSource.query<TableExistsRow[]>(
-      'SELECT to_regclass($1) IS NOT NULL AS "exists"',
-      ['public.loans'],
-    );
-
-    return rows[0]?.exists ?? false;
+    return new Set(loans.map((loan) => loan.itemId));
   }
 
   private isUniqueViolation(error: unknown): boolean {

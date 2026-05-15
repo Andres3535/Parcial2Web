@@ -6,6 +6,7 @@ import { validationSchema } from './config/validation.schema';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { ItemsModule } from './modules/items/items.module';
+import { LoansModule } from './modules/loans/loans.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ItemsModule } from './modules/items/items.module';
     }),
     AuthModule,
     ItemsModule,
+    LoansModule,
     HealthModule,
   ],
 })

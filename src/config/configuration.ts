@@ -52,7 +52,10 @@ export default (): AppConfig => ({
     saltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS ?? '10', 10),
   },
   loans: {
-    maxActivePerUser: parseInt(process.env.MAX_ACTIVE_LOANS ?? '3', 10),
+    maxActivePerUser: parseInt(
+      process.env.MAX_ACTIVE_LOANS_PER_USER ?? process.env.MAX_ACTIVE_LOANS ?? '3',
+      10,
+    ),
     dailyFineRate: parseFloat(process.env.DAILY_FINE_RATE ?? '0.50'),
     maxLoanDays: parseInt(process.env.MAX_LOAN_DAYS ?? '30', 10),
   },

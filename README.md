@@ -45,6 +45,10 @@ npm run start:dev
 
 Abre [http://localhost:3000/api/docs](http://localhost:3000/api/docs) y deberías ver el Swagger UI con el módulo `health` ya disponible.
 
+## Decision: overdue loans
+
+`GET /loans`, `GET /loans/:id`, and loan lifecycle commands persist overdue state before reading or changing a loan. Any loan with `status = active`, `returnedAt IS NULL`, and `dueAt < now()` is updated to `status = overdue`, so `GET /loans?status=overdue` returns both previously overdue loans and active loans that became overdue since the last request.
+
 ## Scripts disponibles
 
 | Script | Descripción |
@@ -108,7 +112,7 @@ El `validationSchema` de Joi exige al arranque:
 - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` (todas requeridas, sin defaults).
 - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` (mínimo 32 caracteres).
 - `BCRYPT_SALT_ROUNDS` (4-15, default 10).
-- `MAX_ACTIVE_LOANS` (default 3), `DAILY_FINE_RATE` (default 0.50), `MAX_LOAN_DAYS` (default 30) — usadas por las reglas de negocio que implementarás (ver enunciado §4.4).
+- `MAX_ACTIVE_LOANS_PER_USER` (default 3), `DAILY_FINE_RATE` (default 0.50), `MAX_LOAN_DAYS` (default 30) — usadas por las reglas de negocio que implementarás (ver enunciado §4.4).
 
 Si falta alguna requerida o no cumple el formato, la app **falla al arrancar** con un mensaje claro.
 
